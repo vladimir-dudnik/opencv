@@ -155,8 +155,7 @@ void App::run()
 
     // Create custom filter
 
-    ocl::CustomFilter filter;
-    Ptr<ocl::CustomFilter> pFilter = filter.create(1, 1, BORDER_CONSTANT, String(), Size());
+    Ptr<ocl::CustomFilter> pFilter = ocl::CustomFilter::create(1, 1, BORDER_CONSTANT, String(), String(), Size());
 
     while (running)
     {
