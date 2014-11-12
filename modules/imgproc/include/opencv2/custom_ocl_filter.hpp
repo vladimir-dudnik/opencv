@@ -18,8 +18,9 @@ public:
     static Ptr<CustomFilter> create(int ninputs, int noutputs, int borderType,
             String programSource = String(), String buildOptions = String(), Size localSize = Size());
 
-    bool run(const std::vector<UMat>& inputs, std::vector<UMat>& outputs, Size imageSize);
-    bool run(const UMat& input, UMat& output, Size imageSize);
+//    bool run(const std::vector<UMat>& inputs, std::vector<UMat>& outputs, Size imageSize);
+    virtual bool run(const UMat& input, UMat& output, Size imageSize) = 0;
+
 };
 
 

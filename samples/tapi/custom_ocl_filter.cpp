@@ -155,7 +155,28 @@ void App::run()
 
     // Create custom filter
 
-    Ptr<ocl::CustomFilter> pFilter = ocl::CustomFilter::create(1, 1, BORDER_CONSTANT, String(), String(), Size());
+    String kernel_source =
+        "__kernel void my_kernel("
+        "  __global const unsigned char* pSrc, int srcStep,"
+        "  __global       unsigned char* pDst, int dstStep,"
+        "  int width, int height)"
+        "{"
+        "  int x = get_global_id(0);"
+        "  int y = get_global_id(1)*4;"
+        "  if(x < width)"
+        "  {"
+        "    int srcIdx = mad24(y,srcStep,x);"
+        "    int dstIdx = mad24(y,dstStep,x);"
+        "    for(int i = y; i < y + 4; i++)"
+        "    {"
+        "      pDst[dstIdx] = pSrc[srcIdx]+1;"
+        "      srcIdx += srcStep;"
+        "      dstIdx += dstStep;"
+        "    }"
+        "  }"
+        "}";
+    String build_options = "";
+    Ptr<ocl::CustomFilter> pFilter = ocl::CustomFilter::create(1, 1, BORDER_CONSTANT, kernel_source, build_options, Size(2, 2));
 
     while (running)
     {
@@ -214,27 +235,33 @@ void App::run()
             // Perform HOG classification
             filterWorkBegin();
 
-            UMat out;
-            UMat kernel(3, 3, CV_32FC1);
-            kernel.setTo(1);
+//            UMat out;
+//            UMat kernel(3, 3, CV_32FC1);
+//            kernel.setTo(1);
 
-            filter2D(img, out, -1, kernel, Point(-1, -1));
+//            filter2D(img, out, -1, kernel, Point(-1, -1));
 
+            Size sz(img.cols, img.rows);
             UMat dst;
-            Size sz;
+            dst.create(sz, img.type());
+            dst.setTo(0xff);
+
             pFilter->run(img, dst, sz);
 
             filterWorkEnd();
 
             // Draw result
             Mat source;
+            Mat aaa;
             img.copyTo(source);
-            out.copyTo(img_to_show);
+//            out.copyTo(img_to_show);
+            dst.copyTo(aaa);
             putText(img_to_show, ocl::useOpenCL() ? "Mode: OpenCL" : "Mode: CPU", Point(5, 25), FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
             putText(img_to_show, "FPS (filter only): " + filterWorkFps(), Point(5, 65), FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
             putText(img_to_show, "FPS (total): " + workFps(), Point(5, 105), FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
             imshow("source", source);
-            imshow("result", img_to_show);
+//            imshow("result", img_to_show);
+            imshow("aaa", aaa);
             if (vdo_source != "" || camera_id != -1)
                 vc >> frame;
 

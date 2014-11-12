@@ -28,7 +28,7 @@ public:
         size_t tryWorkItems = device.maxWorkGroupSize();
         if (device.isIntel() && 128 < tryWorkItems)
             tryWorkItems = 128;
-        /*
+/*
         char build_options[1024];
         sprintf(build_options, "-D cn=%d "
         "-D ANCHOR_X=%d -D ANCHOR_Y=%d -D KERNEL_SIZE_X=%d -D KERNEL_SIZE_Y=%d "
@@ -47,16 +47,23 @@ public:
         ocl::typeToStr(ddepth), ocl::typeToStr(wtype), ocl::typeToStr(wdepth),
         ocl::convertTypeStr(sdepth, wdepth, cn, cvt[0]),
         ocl::convertTypeStr(wdepth, ddepth, cn, cvt[1]), kerStr.c_str());
+*/
+        ProgramSource prg(programSource);
+        if (!k.create("my_kernel", prg, buildOptions))
+            return;
 
-        if (!k.create("filter2DSmall", cv::ocl::imgproc::filter2DSmall_oclsrc, build_options))
-        return Ptr<CustomFilter>(0);
-        */
+        return;
     }
 
-    bool run(const UMat& input, UMat& output, Size imageSize)
+    virtual bool run(const UMat& input, UMat& output, Size imageSize)
     {
-        k.args(KernelArg::PtrReadOnly(input), KernelArg::WriteOnly(output), imageSize);
-        k.run(2, globalSize, &localSize, false);
+        globalSize[0] = imageSize.width;// / predictOptimalVectorWidth(input, output);
+        globalSize[1] = (imageSize.height + 4 - 1) / 4;
+        localSize = 2;
+        int srcStep = input.step[0];
+        int dstStep = output.step[0];
+        k.args(KernelArg::PtrReadOnly(input), srcStep, KernelArg::PtrWriteOnly(output), dstStep, imageSize.width, imageSize.height);
+        k.run(2, globalSize, 0, false);
         return true;
     }
 
@@ -88,16 +95,16 @@ Ptr<CustomFilter> CustomFilter::create(
 }
 
 
-bool CustomFilter::run(const std::vector<UMat>& inputs, std::vector<UMat>& outputs, Size imageSize)
-{
-    return true;
-}
+//bool CustomFilter::run(const std::vector<UMat>& inputs, std::vector<UMat>& outputs, Size imageSize)
+//{
+//    return true;
+//}
 
 
-bool CustomFilter::run(const UMat& input, UMat& output, Size imageSize)
-{
-    return true;
-}
+//bool CustomFilter::run(const UMat& input, UMat& output, Size imageSize)
+//{
+//    return true;
+//}
 
 } // namespace ocl
 } // namespace cv
