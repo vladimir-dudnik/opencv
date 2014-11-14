@@ -235,18 +235,18 @@ void App::run()
             // Perform HOG classification
             filterWorkBegin();
 
-//            UMat out;
-//            UMat kernel(3, 3, CV_32FC1);
-//            kernel.setTo(1);
+            UMat out;
+            UMat kernel(3, 3, CV_32FC1);
+            kernel.setTo(1);
 
-//            filter2D(img, out, -1, kernel, Point(-1, -1));
+            filter2D(img, out, -1, kernel, Point(-1, -1));
 
             Size sz(img.cols, img.rows);
             UMat dst;
             dst.create(sz, img.type());
             dst.setTo(0xff);
 
-            pFilter->run(img, dst, sz);
+//            pFilter->run(img, dst, sz);
 
             filterWorkEnd();
 
@@ -254,14 +254,14 @@ void App::run()
             Mat source;
             Mat aaa;
             img.copyTo(source);
-//            out.copyTo(img_to_show);
-            dst.copyTo(aaa);
+            out.copyTo(img_to_show);
+//            dst.copyTo(aaa);
             putText(img_to_show, ocl::useOpenCL() ? "Mode: OpenCL" : "Mode: CPU", Point(5, 25), FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
             putText(img_to_show, "FPS (filter only): " + filterWorkFps(), Point(5, 65), FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
             putText(img_to_show, "FPS (total): " + workFps(), Point(5, 105), FONT_HERSHEY_SIMPLEX, 1., Scalar(255, 100, 0), 2);
             imshow("source", source);
-//            imshow("result", img_to_show);
-            imshow("aaa", aaa);
+            imshow("result", img_to_show);
+//            imshow("aaa", aaa);
             if (vdo_source != "" || camera_id != -1)
                 vc >> frame;
 
